@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vintage Book with Turn.js</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0e6d2 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><rect width="100" height="100" fill="none" stroke="%238b4513" stroke-width="1"/></svg>');
+            font-family: 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .book-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #book {
+            width: 100%;
+            height: 100%;
+        }
+
+        .page {
+            background: #f9f4e9;
+            background-image: 
+                radial-gradient(#d9c7a7 1px, transparent 1px),
+                radial-gradient(#d9c7a7 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            position: relative;
+            color: #3a2c18;
+            padding: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+            border: 1px solid #d9c7a7;
+        }
+
+        .page.left {
+            background-image: 
+                radial-gradient(#d9c7a7 1px, transparent 1px),
+                radial-gradient(#d9c7a7 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .page.right {
+            background-image: 
+                radial-gradient(#d9c7a7 1px, transparent 1px),
+                radial-gradient(#d9c7a7 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .page h1, .page h2, .page h3 {
+            color: #5d4037;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .page h1 {
+            font-size: 28px;
+            border-bottom: 2px solid #8b4513;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .page h2 {
+            font-size: 22px;
+            margin-top: 30px;
+        }
+
+        .page p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .page .page-number {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 12px;
+            color: #8b4513;
+        }
+
+        .page .header {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #8b4513;
+            border-bottom: 1px dotted #d9c7a7;
+            padding-bottom: 5px;
+        }
+
+        .book-cover {
+            background: linear-gradient(135deg, #8b0000 0%, #5d0000 50%, #8b0000 100%);
+            color: #f5deb3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .book-cover::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 50%, rgba(255, 215, 0, 0.1) 50%),
+                linear-gradient(transparent 50%, rgba(255, 215, 0, 0.1) 50%);
+            background-size: 4px 4px;
+        }
+
+        .book-cover h1 {
+            font-size: 40px;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Times New Roman', serif;
+            letter-spacing: 3px;
+        }
+
+        .book-cover .subtitle {
+            font-size: 20px;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .book-cover .author {
+            font-size: 24px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .book-cover .ornament {
+            font-size: 30px;
+            margin: 10px 0;
+            color: #ffd700;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: #8b4513;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #a0522d;
+        }
+
+        .page-shadow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 70%);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="book-container">
+        <div id="book">
+            <!-- Cover page -->
+            <div class="page book-cover">
+                <div class="ornament">❧ ❧ ❧</div>
+                <h1>THE ANCIENT TOME</h1>
+                <div class="subtitle">A Collection of Vintage Tales</div>
+                <div class="ornament">❧ ❧ ❧</div>
+                <div class="author">By Anonymous Scholar</div>
+            </div>
+
+            <!-- Page 1 -->
+            <div class="page left">
+                <div class="header">The Ancient Tome</div>
+                <h2>Chapter I: The Beginning</h2>
+                <p>In days of yore, when knights were bold and dragons roamed the earth, there lived a wise sage in a tower of ancient stone. His knowledge was vast, his beard was long, and his wisdom was sought by kings and commoners alike.</p>
+                <p>The sage spent his days transcribing the secrets of the universe onto parchment made from the finest sheepskin. Each night, he would light his candles and continue his work by their flickering light.</p>
+                <div class="page-number">1</div>
+            </div>
+
+            <!-- Page 2 -->
+            <div class="page right">
+                <div class="header">The Ancient Tome</div>
+                <p>His quill, carved from the feather of a phoenix, would dance across the pages, recording the mysteries of the stars and the secrets of alchemy. The ink, made from crushed gems and rare herbs, would gleam with an otherworldly light.</p>
+                <p>Many came to seek his counsel, but few were deemed worthy of his teachings. For knowledge, as the sage knew, was not to be given freely to those who would squander it.</p>
+                <h2>Chapter II: The Seeker</h2>
+                <p>One fateful morning, a young scholar arrived at the tower. His eyes were bright with curiosity and his heart was pure with the desire for true knowledge.</p>
+                <div class="page-number">2</div>
+            </div>
+
+            <!-- Page 3 -->
+            <div class="page left">
+                <div class="header">The Ancient Tome</div>
+                <p>The sage, recognizing the worthiness of the young man, agreed to share his wisdom. "Listen well," he said, "for knowledge is like a river - it must flow or it becomes stagnant and useless."</p>
+                <p>For seven years, the young scholar studied under the sage, learning the arts of philosophy, mathematics, and the natural sciences. The tower became his home, and the books became his companions.</p>
+                <p>As time passed, the scholar's knowledge grew, and with it, his understanding of the interconnectedness of all things. He learned that true wisdom was not merely the accumulation of facts, but the ability to see the patterns that connected all knowledge.</p>
+                <div class="page-number">3</div>
+            </div>
+
+            <!-- Page 4 -->
+            <div class="page right">
+                <div class="header">The Ancient Tome</div>
+                <p>At the end of the seven years, the sage declared his student ready to venture forth into the world. "Take with you," he said, "the most important lesson of all: that the pursuit of knowledge is a noble calling, but it must be tempered with wisdom and compassion."</p>
+                <p>The young scholar departed, carrying with him the teachings of his master and a heart full of gratitude. He would go on to establish schools and libraries, spreading the light of learning to all who sought it.</p>
+                <h2>Chapter III: The Legacy</h2>
+                <p>And so the chain of knowledge continued, from teacher to student, from one generation to the next, as it has since the dawn of civilization.</p>
+                <div class="page-number">4</div>
+            </div>
+
+            <!-- Back cover -->
+            <div class="page book-cover">
+                <div class="ornament">❧ ❧ ❧</div>
+                <h1>THE END</h1>
+                <div class="subtitle">Or is it merely the beginning?</div>
+                <div class="ornament">❧ ❧ ❧</div>
+                <div class="author">A Vintage Collection</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prev">Previous</button>
+        <button class="btn" id="next">Next</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize the turn.js book
+            $("#book").turn({
+                width: 800,
+                height: 500,
+                elevation: 50,
+                gradients: true,
+                acceleration: true,
+                autoCenter: true,
+                duration: 1200,
+                when: {
+                    turned: function(e, page, view) {
+                        console.log('Current view pages: ', view);
+                    }
+                }
+            });
+
+            // Add page flip controls
+            $('#next').click(function() {
+                $("#book").turn("next");
+            });
+
+            $('#prev').click(function() {
+                $("#book").turn("previous");
+            });
+
+            // Keyboard navigation
+            $(document).keydown(function(e) {
+                switch(e.keyCode) {
+                    case 37: // left arrow
+                        $("#book").turn("previous");
+                        break;
+                    case 39: // right arrow
+                        $("#book").turn("next");
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
